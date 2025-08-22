@@ -4,8 +4,9 @@
 
 [![Chromium Extension](https://img.shields.io/badge/Chromium%20Extension-4285F4?logo=googlechrome&logoColor=white)](#-ecosystem-integration)
 [![Firefox Extension](https://img.shields.io/badge/Firefox%20Extension-582ACB?logo=Firefox&logoColor=white)](#-ecosystem-integration)
-[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?&logo=cloudflare&logoColor=white)](#one-click-cloudflare-workers-deployment)
-[![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)](#one-click-vercel-deployment)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?&logo=cloudflare&logoColor=white)](cloudflare-workers)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)](#vercel)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?&logo=docker&logoColor=white)](#docker)
 
 [![GitHub](https://img.shields.io/badge/GitHub-181717?&logo=github&logoColor=white)](#github)
 [![GitLab](https://img.shields.io/badge/GitLab-FC6D26?&logo=gitlab&logoColor=white)](#gitlab)
@@ -14,6 +15,7 @@
 [![SourceForge](https://img.shields.io/badge/SourceForge-FF6600?&logo=sourceforge&logoColor=white)](#sourceforge)
 [![AOSP](https://img.shields.io/badge/AOSP-3DDC84?&logo=android&logoColor=white)](#aosp-android-open-source-project)
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-FFD21E?&logo=huggingface&logoColor=white)](#hugging-face-mirror)
+[![Civitai](https://img.shields.io/badge/Civitai-0066CC)](#civitai-ai-model-platform)
 [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](#npm-package-acceleration)
 [![PyPI](https://img.shields.io/badge/PyPI-3775A9?logo=pypi&logoColor=white)](#python-package-acceleration)
 [![conda](https://img.shields.io/badge/conda-44A833?logo=anaconda&logoColor=white)](#conda-package-acceleration)
@@ -137,6 +139,7 @@ Using the public instance **`xget.xi-xu.me`** or your own deployed instance, sim
 | SourceForge | `sf` | `https://sourceforge.net/...` | `https://xget.xi-xu.me/sf/...` |
 | AOSP | `aosp` | `https://android.googlesource.com/...` | `https://xget.xi-xu.me/aosp/...` |
 | Hugging Face | `hf` | `https://huggingface.co/...` | `https://xget.xi-xu.me/hf/...` |
+| Civitai | `civitai` | `https://civitai.com/...` | `https://xget.xi-xu.me/civitai/...` |
 | npm | `npm` | `https://registry.npmjs.org/...` | `https://xget.xi-xu.me/npm/...` |
 | PyPI | `pypi` | `https://pypi.org/...` | `https://xget.xi-xu.me/pypi/...` |
 | conda | `conda` | `https://repo.anaconda.com/...` and `https://conda.anaconda.org/...` | `https://xget.xi-xu.me/conda/...` and `https://xget.xi-xu.me/conda/community/...` |
@@ -245,6 +248,28 @@ https://huggingface.co/datasets/rajpurkar/squad/resolve/main/plain_text/train-00
 
 # Transformed (add hf prefix)
 https://xget.xi-xu.me/hf/datasets/rajpurkar/squad/resolve/main/plain_text/train-00000-of-00001.parquet
+```
+
+#### Civitai
+
+```url
+# AI model download original URL
+https://civitai.com/api/download/models/128713
+
+# Transformed (add civitai prefix)
+https://xget.xi-xu.me/civitai/api/download/models/128713
+
+# Model API original URL
+https://civitai.com/api/v1/models/7240
+
+# Transformed (add civitai prefix)
+https://xget.xi-xu.me/civitai/api/v1/models/7240
+
+# Model version API original URL
+https://civitai.com/api/v1/model-versions/128713
+
+# Transformed (add civitai prefix)
+https://xget.xi-xu.me/civitai/api/v1/model-versions/128713
 ```
 
 #### npm
@@ -567,6 +592,48 @@ print("Model and tokenizer loaded successfully!")
 # print(tokenizer.decode(chat_history_ids[:, new_user_input_ids.shape[-1]:][0], skip_special_tokens=True))
 ```
 
+### Civitai AI Model Platform
+
+```python
+import requests
+
+# Set API base URL to use Xget acceleration
+base_url = "https://xget.xi-xu.me/civitai"
+
+# Get model information
+def get_model_info(model_id):
+    """Retrieve Civitai model information"""
+    url = f"{base_url}/api/v1/models/{model_id}"
+    response = requests.get(url)
+    return response.json()
+
+# Download model
+def download_model(model_version_id, output_path):
+    """Download Civitai model file"""
+    download_url = f"{base_url}/api/download/models/{model_version_id}"
+
+    print(f"Downloading model version {model_version_id}...")
+
+    response = requests.get(download_url, stream=True)
+    response.raise_for_status()
+
+    with open(output_path, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            f.write(chunk)
+
+    print(f"Model downloaded to: {output_path}")
+
+# Usage example
+model_id = 7240  # Example model ID
+model_info = get_model_info(model_id)
+print(f"Model name: {model_info['name']}")
+
+# Download the first model version
+if model_info['modelVersions']:
+    version_id = model_info['modelVersions'][0]['id']
+    download_model(version_id, f"model_{version_id}.safetensors")
+```
+
 ### npm Package Acceleration
 
 #### Configure npm to use Xget mirror
@@ -746,7 +813,7 @@ conda env update -f environment.yml
       <url>https://xget.xi-xu.me/maven/maven2</url>
     </repository>
   </repositories>
-  
+
   <pluginRepositories>
     <pluginRepository>
       <id>xget-maven-central</id>
@@ -1319,7 +1386,7 @@ import requests
 def download_arxiv_paper(arxiv_id, output_path):
     url = f"https://xget.xi-xu.me/arxiv/pdf/{arxiv_id}.pdf"
     response = requests.get(url)
-    
+
     if response.status_code == 200:
         with open(output_path, 'wb') as f:
             f.write(response.content)
@@ -1487,10 +1554,10 @@ import requests
 class XgetTransport:
     def __init__(self, base_url):
         self.base_url = base_url
-        
+
     def request(self, method, url, **kwargs):
         # Forward requests to Xget acceleration service
-        accelerated_url = url.replace("https://generativelanguage.googleapis.com", 
+        accelerated_url = url.replace("https://generativelanguage.googleapis.com",
                                     "https://xget.xi-xu.me/ip/gemini")
         return requests.request(method, accelerated_url, **kwargs)
 
@@ -1516,10 +1583,10 @@ def call_ai_api(provider, endpoint, data, api_key):
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
-    
+
     # Use Xget acceleration URL
     url = f"https://xget.xi-xu.me/ip/{provider}/{endpoint}"
-    
+
     response = requests.post(url, headers=headers, json=data)
     return response.json()
 
@@ -1580,7 +1647,7 @@ async function chatWithGPT() {
     messages: [{ role: 'user', content: 'Hello!' }],
     model: 'gpt-4',
   });
-  
+
   console.log(completion.choices[0].message.content);
 }
 
@@ -1598,7 +1665,7 @@ async function chatWithClaude() {
     max_tokens: 1000,
     messages: [{ role: 'user', content: 'Hello!' }],
   });
-  
+
   console.log(message.content);
 }
 ```
@@ -1705,7 +1772,7 @@ services:
       - "80:80"
     volumes:
       - ./html:/usr/share/nginx/html
-  
+
   database:
     image: xget.xi-xu.me/cr/mcr/mssql/server:2022-latest
     environment:
@@ -1713,7 +1780,7 @@ services:
       SA_PASSWORD: "MyStrongPassword123!"
     volumes:
       - mssql_data:/var/opt/mssql
-  
+
   cache:
     image: xget.xi-xu.me/cr/ghcr/bitnami/redis:alpine
     ports:
@@ -1759,13 +1826,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Build with accelerated base images
         run: |
           # Build using Xget-accelerated base images
           docker build -t myapp:latest \
             --build-arg BASE_IMAGE=xget.xi-xu.me/cr/ghcr/nodejs/node:18-alpine .
-          
+
       - name: Test with accelerated images
         run: |
           # Test using accelerated images
@@ -1819,17 +1886,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Download model files
         run: |
           # Use Xget acceleration to download large model files
           wget https://xget.xi-xu.me/hf/microsoft/DialoGPT-medium/resolve/main/pytorch_model.bin
-          
+
       - name: Clone dependency repo
         run: |
           # Use Xget acceleration for Git cloning
           git clone https://xget.xi-xu.me/gh/[owner]/[repository].git
-          
+
       - name: Download release assets
         run: |
           # Batch download release files
@@ -1890,58 +1957,155 @@ WORKDIR /app
 
 ## 🚀 Deployment Options
 
-### One-Click Cloudflare Workers Deployment
+### Cloudflare Workers
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/xixu-me/Xget)
 
 After deployment, your Xget service will be available at `your-worker-name.your-subdomain.workers.dev`.
 
-### One-Click Vercel Deployment
+### Vercel
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/xixu-me/Xget)
 
 After deployment, your Xget service will be available at `your-project-name.vercel.app`.
 
-### Manual Deployment
+### Docker
 
-If you prefer manual deployment or need custom configuration:
+#### Using Pre-built Images (Recommended)
 
-#### Prerequisites
+```bash
+# Pull the latest image
+docker pull ghcr.io/xixu-me/xget:latest
 
-1. Sign up for a [Cloudflare account](https://dash.cloudflare.com/sign-up/workers-and-pages)
-2. Install [Node.js](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+# Run the container
+docker run -d \
+  --name xget \
+  -p 3000:3000 \
+  --restart unless-stopped \
+  ghcr.io/xixu-me/xget:latest
+```
 
-#### Deployment Steps
+#### Building Locally
 
-1. **Clone the repository**
+```bash
+# Clone the repository
+git clone https://github.com/xixu-me/Xget.git
+cd Xget
 
-   ```bash
-   git clone https://github.com/xixu-me/Xget.git
-   cd Xget
-   ```
+# Build the image
+docker build -t xget .
 
-2. **Install dependencies and authenticate**
+# Run the container
+docker run -d \
+  --name xget \
+  -p 3000:3000 \
+  --restart unless-stopped \
+  xget
+```
 
-   ```bash
-   npm install
-   npx wrangler login
-   ```
+#### Docker Compose
 
-3. **Customize configuration (optional)**
+Create a `docker-compose.yml` file:
 
-   Edit the `wrangler.toml` file to set your repository name:
+```yaml
+version: '3.8'
 
-   ```toml
-   name = "your-xget-project-name"
-   ```
+services:
+  xget:
+    image: ghcr.io/xixu-me/xget:latest
+    container_name: xget
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+```
 
-4. **Deploy**
+Then run:
 
-   ```bash
-   npm run deploy
-   ```
+```bash
+docker-compose up -d
+```
 
-After deployment, your Xget service will be available at `your-worker-name.your-subdomain.workers.dev`.
+#### Kubernetes Deployment
+
+Create a `k8s-deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xget
+  labels:
+    app: xget
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: xget
+  template:
+    metadata:
+      labels:
+        app: xget
+    spec:
+      containers:
+      - name: xget
+        image: ghcr.io/xixu-me/xget:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xget-service
+spec:
+  selector:
+    app: xget
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
+```
+
+Deploy to Kubernetes:
+
+```bash
+kubectl apply -f k8s-deployment.yaml
+```
+
+After deployment, your Xget service will be available at `http://localhost:3000`. You can check the service status through the `/api/health` endpoint.
 
 ## 🔧 Configuration
 
@@ -1976,7 +2140,7 @@ To add support for new platforms, edit `src/config/platforms.js`:
 ```javascript
 export const PLATFORMS = {
   // Existing platforms...
-  
+
   // New platform example
   custom: {
     base: "https://example.com",
@@ -2038,16 +2202,16 @@ npm run test:watch
 
 ### Common Issues
 
-**Q: Download speed not significantly improved?**  
+**Q: Download speed not significantly improved?**
 A: Check if source files are already cached on CDN edge nodes. First access may be slower, subsequent access will be significantly faster.
 
-**Q: Git operations failing?**  
+**Q: Git operations failing?**
 A: Confirm correct URL format usage and that Git client version supports HTTPS proxy.
 
-**Q: Cannot access after deployment?**  
+**Q: Cannot access after deployment?**
 A: Check if Cloudflare Workers domain is correctly bound and confirm `wrangler.toml` configuration is correct.
 
-**Q: Getting 400 errors?**  
+**Q: Getting 400 errors?**
 A: Check URL path format and confirm platform prefix is used correctly.
 
 ### Performance Monitoring

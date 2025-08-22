@@ -4,8 +4,9 @@
 
 [![Chromium 扩展](https://img.shields.io/badge/Chromium%20扩展-4285F4?logo=googlechrome&logoColor=white)](#-生态系统集成)
 [![Firefox 扩展](https://img.shields.io/badge/Firefox%20扩展-582ACB?logo=Firefox&logoColor=white)](#-生态系统集成)
-[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?&logo=cloudflare&logoColor=white)](#cloudflare-workers-一键部署)
-[![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)](#vercel-一键部署)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?&logo=cloudflare&logoColor=white)](#cloudflare-workers)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)](#vercel)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?&logo=docker&logoColor=white)](#docker)
 
 [![GitHub](https://img.shields.io/badge/GitHub-181717?&logo=github&logoColor=white)](#github)
 [![GitLab](https://img.shields.io/badge/GitLab-FC6D26?&logo=gitlab&logoColor=white)](#gitlab)
@@ -14,6 +15,7 @@
 [![SourceForge](https://img.shields.io/badge/SourceForge-FF6600?&logo=sourceforge&logoColor=white)](#sourceforge)
 [![AOSP](https://img.shields.io/badge/AOSP-3DDC84?&logo=android&logoColor=white)](#aosp-android-%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE)
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-FFD21E?&logo=huggingface&logoColor=white)](#hugging-face-镜像)
+[![Civitai](https://img.shields.io/badge/Civitai-0066CC)](#civitai-ai-模型平台)
 [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](#npm-包管理加速)
 [![PyPI](https://img.shields.io/badge/PyPI-3775A9?logo=pypi&logoColor=white)](#python-包管理加速)
 [![conda](https://img.shields.io/badge/conda-44A833?logo=anaconda&logoColor=white)](#conda-包管理加速)
@@ -137,6 +139,7 @@
 | SourceForge | `sf` | `https://sourceforge.net/...` | `https://xget.xi-xu.me/sf/...` |
 | AOSP | `aosp` | `https://android.googlesource.com/...` | `https://xget.xi-xu.me/aosp/...` |
 | Hugging Face | `hf` | `https://huggingface.co/...` | `https://xget.xi-xu.me/hf/...` |
+| Civitai | `civitai` | `https://civitai.com/...` | `https://xget.xi-xu.me/civitai/...` |
 | npm | `npm` | `https://registry.npmjs.org/...` | `https://xget.xi-xu.me/npm/...` |
 | PyPI | `pypi` | `https://pypi.org/...` | `https://xget.xi-xu.me/pypi/...` |
 | conda | `conda` | `https://repo.anaconda.com/...` 和 `https://conda.anaconda.org/...` | `https://xget.xi-xu.me/conda/...` 和 `https://xget.xi-xu.me/conda/community/...` |
@@ -245,6 +248,28 @@ https://huggingface.co/datasets/rajpurkar/squad/resolve/main/plain_text/train-00
 
 # 转换后（添加 hf 前缀）
 https://xget.xi-xu.me/hf/datasets/rajpurkar/squad/resolve/main/plain_text/train-00000-of-00001.parquet
+```
+
+#### Civitai
+
+```url
+# AI 模型下载原始 URL
+https://civitai.com/api/download/models/128713
+
+# 转换后（添加 civitai 前缀）
+https://xget.xi-xu.me/civitai/api/download/models/128713
+
+# 模型 API 原始 URL
+https://civitai.com/api/v1/models/7240
+
+# 转换后（添加 civitai 前缀）
+https://xget.xi-xu.me/civitai/api/v1/models/7240
+
+# 模型版本 API 原始 URL
+https://civitai.com/api/v1/model-versions/128713
+
+# 转换后（添加 civitai 前缀）
+https://xget.xi-xu.me/civitai/api/v1/model-versions/128713
 ```
 
 #### npm
@@ -811,6 +836,48 @@ print("模型和分词器加载成功！")
 # print(tokenizer.decode(chat_history_ids[:, new_user_input_ids.shape[-1]:][0], skip_special_tokens=True))
 ```
 
+### Civitai AI 模型平台
+
+```python
+import requests
+
+# 设置 API 基础 URL 使用 Xget 加速
+base_url = "https://xget.xi-xu.me/civitai"
+
+# 获取模型信息
+def get_model_info(model_id):
+    """获取 Civitai 模型信息"""
+    url = f"{base_url}/api/v1/models/{model_id}"
+    response = requests.get(url)
+    return response.json()
+
+# 下载模型
+def download_model(model_version_id, output_path):
+    """下载 Civitai 模型文件"""
+    download_url = f"{base_url}/api/download/models/{model_version_id}"
+
+    print(f"正在下载模型版本 {model_version_id}...")
+
+    response = requests.get(download_url, stream=True)
+    response.raise_for_status()
+
+    with open(output_path, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            f.write(chunk)
+
+    print(f"模型已下载到: {output_path}")
+
+# 使用示例
+model_id = 7240  # 示例模型 ID
+model_info = get_model_info(model_id)
+print(f"模型名称: {model_info['name']}")
+
+# 下载第一个模型版本
+if model_info['modelVersions']:
+    version_id = model_info['modelVersions'][0]['id']
+    download_model(version_id, f"model_{version_id}.safetensors")
+```
+
 ### npm 包管理加速
 
 #### 配置 npm 使用 Xget 镜像
@@ -990,7 +1057,7 @@ conda env update -f environment.yml
       <url>https://xget.xi-xu.me/maven/maven2</url>
     </repository>
   </repositories>
-  
+
   <pluginRepositories>
     <pluginRepository>
       <id>xget-maven-central</id>
@@ -1563,7 +1630,7 @@ import requests
 def download_arxiv_paper(arxiv_id, output_path):
     url = f"https://xget.xi-xu.me/arxiv/pdf/{arxiv_id}.pdf"
     response = requests.get(url)
-    
+
     if response.status_code == 200:
         with open(output_path, 'wb') as f:
             f.write(response.content)
@@ -1731,10 +1798,10 @@ import requests
 class XgetTransport:
     def __init__(self, base_url):
         self.base_url = base_url
-        
+
     def request(self, method, url, **kwargs):
         # 将请求转发到 Xget 加速服务
-        accelerated_url = url.replace("https://generativelanguage.googleapis.com", 
+        accelerated_url = url.replace("https://generativelanguage.googleapis.com",
                                     "https://xget.xi-xu.me/ip/gemini")
         return requests.request(method, accelerated_url, **kwargs)
 
@@ -1760,10 +1827,10 @@ def call_ai_api(provider, endpoint, data, api_key):
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
-    
+
     # 使用 Xget 加速 URL
     url = f"https://xget.xi-xu.me/ip/{provider}/{endpoint}"
-    
+
     response = requests.post(url, headers=headers, json=data)
     return response.json()
 
@@ -1824,7 +1891,7 @@ async function chatWithGPT() {
     messages: [{ role: 'user', content: 'Hello!' }],
     model: 'gpt-4',
   });
-  
+
   console.log(completion.choices[0].message.content);
 }
 
@@ -1842,7 +1909,7 @@ async function chatWithClaude() {
     max_tokens: 1000,
     messages: [{ role: 'user', content: 'Hello!' }],
   });
-  
+
   console.log(message.content);
 }
 ```
@@ -1949,7 +2016,7 @@ services:
       - "80:80"
     volumes:
       - ./html:/usr/share/nginx/html
-  
+
   database:
     image: xget.xi-xu.me/cr/mcr/mssql/server:2022-latest
     environment:
@@ -1957,7 +2024,7 @@ services:
       SA_PASSWORD: "MyStrongPassword123!"
     volumes:
       - mssql_data:/var/opt/mssql
-  
+
   cache:
     image: xget.xi-xu.me/cr/ghcr/bitnami/redis:alpine
     ports:
@@ -2003,13 +2070,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Build with accelerated base images
         run: |
           # 构建时使用 Xget 加速的基础镜像
           docker build -t myapp:latest \
             --build-arg BASE_IMAGE=xget.xi-xu.me/cr/ghcr/nodejs/node:18-alpine .
-          
+
       - name: Test with accelerated images
         run: |
           # 使用加速镜像进行测试
@@ -2063,17 +2130,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Download model files
         run: |
           # 使用 Xget 加速下载大型模型文件
           wget https://xget.xi-xu.me/hf/microsoft/DialoGPT-medium/resolve/main/pytorch_model.bin
-          
+
       - name: Clone dependency repo
         run: |
           # 使用 Xget 加速 Git 克隆
           git clone https://xget.xi-xu.me/gh/[所有者]/[存储库].git
-          
+
       - name: Download release assets
         run: |
           # 批量下载发布文件
@@ -2134,58 +2201,155 @@ WORKDIR /app
 
 ## 🚀 部署选择
 
-### Cloudflare Workers 一键部署
+### Cloudflare Workers
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/xixu-me/Xget)
 
 部署后，你的 Xget 服务将在 `your-worker-name.your-subdomain.workers.dev` 上可用。
 
-### Vercel 一键部署
+### Vercel
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/xixu-me/Xget)
 
 部署后，你的 Xget 服务将在 `your-project-name.vercel.app` 上可用。
 
-### 手动部署
+### Docker
 
-如果你更喜欢手动部署或需要自定义配置：
+#### 使用预构建镜像（推荐）
 
-#### 前置要求
+```bash
+# 拉取最新镜像
+docker pull ghcr.io/xixu-me/xget:latest
 
-1. 注册 [Cloudflare 账户](https://dash.cloudflare.com/sign-up/workers-and-pages)
-2. 安装 [Node.js](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+# 运行容器
+docker run -d \
+  --name xget \
+  -p 3000:3000 \
+  --restart unless-stopped \
+  ghcr.io/xixu-me/xget:latest
+```
 
-#### 部署步骤
+#### 本地构建镜像
 
-1. **克隆存储库**
+```bash
+# 克隆存储库
+git clone https://github.com/xixu-me/Xget.git
+cd Xget
 
-   ```bash
-   git clone https://github.com/xixu-me/Xget.git
-   cd Xget
-   ```
+# 构建镜像
+docker build -t xget .
 
-2. **安装依赖并认证**
+# 运行容器
+docker run -d \
+  --name xget \
+  -p 3000:3000 \
+  --restart unless-stopped \
+  xget
+```
 
-   ```bash
-   npm install
-   npx wrangler login
-   ```
+#### Docker Compose
 
-3. **自定义配置（可选）**
+创建 `docker-compose.yml` 文件：
 
-   编辑 `wrangler.toml` 文件设置你的存储库名称：
+```yaml
+version: '3.8'
 
-   ```toml
-   name = "你的-xget-项目名"
-   ```
+services:
+  xget:
+    image: ghcr.io/xixu-me/xget:latest
+    container_name: xget
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+```
 
-4. **部署**
+然后运行：
 
-   ```bash
-   npm run deploy
-   ```
+```bash
+docker-compose up -d
+```
 
-部署完成后，你的 Xget 服务将在 `your-worker-name.your-subdomain.workers.dev` 上可用。
+#### Kubernetes 部署
+
+创建 `k8s-deployment.yaml`：
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xget
+  labels:
+    app: xget
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: xget
+  template:
+    metadata:
+      labels:
+        app: xget
+    spec:
+      containers:
+      - name: xget
+        image: ghcr.io/xixu-me/xget:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xget-service
+spec:
+  selector:
+    app: xget
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
+```
+
+部署到 Kubernetes：
+
+```bash
+kubectl apply -f k8s-deployment.yaml
+```
+
+部署完成后，你的 Xget 服务将在 `http://localhost:3000` 上可用。通过 `/api/health` 端点可以检查服务状态。
 
 ## 🔧 配置
 
@@ -2220,7 +2384,7 @@ export const CONFIG = {
 ```javascript
 export const PLATFORMS = {
   // 现有平台...
-  
+
   // 新平台示例
   custom: {
     base: "https://example.com",
@@ -2282,16 +2446,16 @@ npm run test:watch
 
 ### 常见问题
 
-**Q: 下载速度没有明显提升？**  
+**Q: 下载速度没有明显提升？**
 A: 检查源文件是否已经在 CDN 边缘节点缓存，首次访问可能较慢，后续访问会显著提升。
 
-**Q: Git 操作失败？**  
+**Q: Git 操作失败？**
 A: 确认使用了正确的 URL 格式，且 Git 客户端版本支持 HTTPS 代理。
 
-**Q: 部署后无法访问？**  
+**Q: 部署后无法访问？**
 A: 检查 Cloudflare Workers 域名是否正确绑定，确认 `wrangler.toml` 配置正确。
 
-**Q: 出现 400 错误？**  
+**Q: 出现 400 错误？**
 A: 检查 URL 路径格式，确认平台前缀正确使用。
 
 ### 性能监控
