@@ -38,7 +38,6 @@ export const PLATFORMS = {
   arch: 'https://geo.mirror.pkgbuild.com',
   arxiv: 'https://arxiv.org',
   fdroid: 'https://f-droid.org',
-  gitmcp: 'https://gitmcp.io',
 
   // AI Inference Providers
   'ip-openai': 'https://api.openai.com',
